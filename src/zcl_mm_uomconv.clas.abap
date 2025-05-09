@@ -19,6 +19,16 @@ CLASS zcl_mm_uomconv DEFINITION
                 RETURNING
                     VALUE(rv_destination_quantity) TYPE menge_d.
 
+        METHODS:
+            convert_material_unit_ins
+                IMPORTING
+                    VALUE(iv_matnr) TYPE matnr
+                    VALUE(iv_source_quantity) TYPE menge_d
+                    VALUE(iv_source_uom) TYPE meins
+                    VALUE(iv_destination_uom) TYPE meins
+                    VALUE(iv_use_fallback) TYPE abap_bool
+                RETURNING
+                    VALUE(rv_destination_quantity) TYPE menge_d.
     PROTECTED SECTION.
     PRIVATE SECTION.
 ENDCLASS.
@@ -26,6 +36,27 @@ ENDCLASS.
 
 
 CLASS zcl_mm_uomconv IMPLEMENTATION.
+
+    METHOD convert_material_unit_ins
+        BY DATABASE FUNCTION FOR HDB LANGUAGE SQLSCRIPT
+        OPTIONS READ-ONLY
+        USING
+            ZCL_MM_UOMCONV=>CONVERT_MATERIAL_UNIT.
+
+        SELECT
+            "ZCL_MM_UOMCONV=>CONVERT_MATERIAL_UNIT"(
+                iv_matnr => :iv_matnr,
+                iv_source_quantity => :iv_source_quantity,
+                iv_source_uom => :iv_source_uom,
+                iv_destination_uom => :iv_destination_uom,
+                iv_use_fallback => :iv_use_fallback
+            )
+        into
+            rv_destination_quantity
+        from
+            dummy;
+
+    ENDMETHOD.
 
     METHOD convert_material_unit
         BY DATABASE FUNCTION FOR HDB LANGUAGE SQLSCRIPT
